@@ -7,8 +7,8 @@ Coming soon
 
 ## Requirements
 
-Dependencies can be found in the requirement.txt file.
-
+Dependencies can be found in the `environment.yml` file.
+> :warning: It is recommended to run IPOPT with HSL solvers [here](https://coin-or.github.io/Ipopt/INSTALL.html).
 
 ## Usage
 ### Prepare dataset
