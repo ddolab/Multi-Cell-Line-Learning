@@ -13,8 +13,9 @@ Dependencies can be found in the `environment.yml` file.
 ## Usage
 ### Prepare dataset
 
-Split datasets into the training and testing set and fill data into the template files, `Data_input_train.xlsx` and `Data_input_test.xlsx`.
-> :warning: Notation change, $\beta$ of enzymes are equivailent to `E0d` columns in the excel file.
+1. Split datasets into the training and testing set and fill data into the template files, `Data_input_train.xlsx` and `Data_input_test.xlsx`.
+   > :warning: Notation change, $\beta$ of enzymes are equivailent to `E0d` columns in the excel file.
+2. Provide feasbile solutions of each steady-state time point to create warmstart points for the algorithm. The input template can be found in `\SCL_MCL\Data\IGs\CL1\solution_CL1_1.csv`. The filename (path) should follow the following template `\SCL_MCL\Data\IGs\$cell-line-name\solution_$cell-line-name_$random-number.csv`.
 
 ### Steps to run SCL/MCL optimization codes in the `SCL_MCL` folder
 1. **Solve SCL for each cell line**
