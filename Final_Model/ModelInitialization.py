@@ -2,45 +2,37 @@
 This file creates the pyomo model object, and fills in the variables, objectives, and constraints from the modelreactions file
 """
 from __future__ import division
-from ModelReactions_v17 import *
+from ModelReactions import *
 from pyomo.environ import *
 import csv
 import pandas as pd
-# Initialize dictionaries to use with model
 """
-Generate lists
+Generate sets (python lists) for pyomo model
 """
-'''
-    VPSet -> Variable parameter set
-    Seems to control NADH, NADPH, PFKFB, G6P to F6P?, Pyruvate to AcCoA in mitochondria, Citrate synthase, Succinate Dehydrogenase, ADP, Succinate to Malate 
-    TLDR, NADH, NADPH, TCA cycle things, and the upper glycolysis pathway
-'''
+
+### VPSet -> Variable parameter set, parameters that are functions of variables
 VPSet = ['Cnadh', 'Cnadph', 'Gssg', 'Kmpfk2f26p', 'Vfpfk2', 'Krmgpii', 'Kpdhcai1', 'Kcsai1', 'Kcsai2', 'Ksdhai',
          'Kfumai', 'Kgot2ai', 'Kgot1ai','Ccadp','MgAtp','MgAdp']
 
-'''
-    Controls extracellular parameters that can be controlled:
-    Glucose, Lactate, Glutamine, Alanine, Glutamate, NADH/NAD supply, pH?, 
-    Also controls Akt pathway
-    
-'''
-PSet = ['Ceglc', 'Celac', 'Akt', 'Ncd', 'hyd', 'bgkrp', 'Cegln', 'CcH', 'KBP', 'Ccatp', 'Ccala', 'Cmala']#,'Ceasn']#,'Ceasp']
 
-### Set of all reactions
+### PSet: input paramter set
+PSet = ['Ceglc', 'Celac', 'Akt', 'Ncd', 'hyd', 'bgkrp', 'Cegln', 'CcH', 'KBP', 'Ccatp', 'Ccala', 'Cmala']
+
+### reactionSet: reaction Set (script R in the paper formulation)
 reactionSet = ['rglut1', 'rhk1', 'rhk2', 'rhk3', 'rhk4', 'rhk', 'rpgi', 'rpfk2', 'rpfkl', 'rpfkm', 'rpfkp', 'rpfk',
                'rald', 'rtpi', 'rgapd', 'rpgk', 'rpgm', 'ren', 'rpkm2', 'rpkm1', 'rpkl', 'rpkr', 'rpk',
                'rldha', 'rldhb', 'rldh', 'rmct', 'rmdh1', 'rgot1', 'rgpt1', 'rgshox', 'rgssgr', 'rg6pd', 'r6pgd',
                'rep', 'rrpi', 'rprpps', 'rta', 'rtkxyl5p', 'rtkgap', 'rtkr5p', 'rtksh7p', 'rtke4p', 'rtkf6p',
                'rbsn', 'rpdhc', 'rcs', 'racon', 'ridh', 'rakgd', 'rscoas', 'rsdh', 'rfum', 'rgdh',
                'rmdh2', 'rgot2', 'rmmalic', 'rcmalic', 'rcly', 'rpyrh', 'rgluh', 'rglnh', 'rcitmal', 'rakgmal', 'rmalpi',
-               'raspglu', 'rglnna', 'rgls', 'rpc', 'rgs']# inactive rxns: 'raspg','rasnna','raspna', 'rgluna', 'ralana', 'rpck2', 'rpepx', 'rpck1', 'rg6pase', 'rfbp1','rfao','rgly','ratp'
+               'raspglu', 'rglnna', 'rgls', 'rpc', 'rgs']
 
 ### Set of all species present
 speciesSet = ['Ccglc', 'Ccg6p', 'Ccf6p', 'Ccfbp', 'Ccf26p', 'Ccdhap', 'Ccgap', 'Cc13p2g', 'Cc3pg',
               'Cc2pg', 'Ccpep', 'Ccpyr', 'Cmaccoa', 'Cclac', 'Cmpyr', 'Cmcit', 'Cmicit', 'Cmakg',
               'Cmscoa', 'Cmsuc', 'Cmfum', 'Cmmal', 'Cmoaa', 'Cmasp', 'Ccasp', 'Ccoaa', 'Ccmal', 'Cmglu',
               'Ccakg', 'Cccit', 'Cnad', 'Ccglu', 'Cc6pg', 'Cnadp', 'Ccgsh', 'Ccru5p', 'Ccxyl5p', 'Ccr5p',
-              'Ccsh7p', 'Cce4p','Ccgln', 'Cmgln']# metabolites corresponding to inactive rxns: 'Ccasn', 'Cmpep', 'Ccatp', 'Ccgln', 'Cmgln', 'Ccala', 'Ccatp'
+              'Ccsh7p', 'Cce4p','Ccgln', 'Cmgln']
 
 ### Initial/Normal levels of enzymes
 E0Set = ['E0glut1', 'E0hk1', 'E0hk2', 'E0hk3', 'E0hk4', 'E0pgi', 'E0pfk2', 'E0pfkl', 'E0pfkm',
@@ -49,7 +41,7 @@ E0Set = ['E0glut1', 'E0hk1', 'E0hk2', 'E0hk3', 'E0hk4', 'E0pgi', 'E0pfk2', 'E0pf
          'E06pgd', 'E0ep', 'E0rpi', 'E0prpps', 'E0ta', 'E0tk1', 'E0bsn', 'E0pdhc', 'E0cs', 'E0acon',
          'E0idh', 'E0akgd', 'E0scoas', 'E0sdh', 'E0fum', 'E0gdh', 'E0mdh2', 'E0got2', 'E0mmalic', 'E0cmalic',
          'E0cly', 'E0pyrh', 'E0gluh', 'E0glnh', 'E0citmal', 'E0akgmal', 'E0malpi', 'E0aspglu', 'E0glnna', 'E0pc',
-         'E0gpt1', 'E0gls', 'E0gs', 'KBP0'] #  inactive rxns/enzymes: 'E0asnna','E0aspna'  # GNG reactions/enzymes:'Fpk', 'E0atp', 'E0pck2','E0pepx', 'E0pck1', 'E0g6pase', 'E0fao', 'E0fbp1', 'E0gly'
+         'E0gpt1', 'E0gls', 'E0gs', 'KBP0']
 
 # Define irrev rxns
 # foward reactions
@@ -231,13 +223,6 @@ solveropt = {'max_iter': 1000,
                     # 'linear_solver': 'ma57',
                     'print_level': 5}
 
-# BARON options
-opt2 = SolverFactory('baron')
-
-solveropt2 = {'NLPSol': -1,
-              'LPSol': 3,
-              'MaxTime': 100,
-              'CplexLibName': "C:/Program Files/IBM/ILOG/CPLEX_Studio_Community129/cplex/bin/x64_win64/cplex1290.dll"} #cplex libray path
 
 
 
