@@ -36,9 +36,8 @@ Split datasets into the training and testing set and fill data into the template
    
    Based on the previous stage, pick up the optimal $\lambda$ value and run 
    ```
-   python Wrapper.py -kidx $kidx -l1 $l1 -np 16 -stg 4
+   python Wrapper.py -l1 $l1 -np 16 -stg 4
    ```
-   Run the code with `-kidx` from 1 to 5.
 5. **Model Validation on the testing data set**
 
    Get the testing error for SCL:
