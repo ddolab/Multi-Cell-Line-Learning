@@ -43,7 +43,7 @@ Split datasets into the training and testing set and fill data into the template
 
    Get the testing error for SCL:
    ```
-   python Model_Validation.py -stg 1 -seed $seed
+   python Model_Validation.py -stg 1
    ```
 
    Get the testing error for MCL:
