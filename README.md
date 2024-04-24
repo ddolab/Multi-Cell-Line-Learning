@@ -1,4 +1,4 @@
-# Multi-Cell-line-Learning
+# Multi-Cell-Line-Learning
 This repository contains codes and data for the MCL paper. The following are the instructions to run the codes.
 
 ## Citation
